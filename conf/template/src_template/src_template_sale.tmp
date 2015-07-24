@@ -1,0 +1,123 @@
+/*
+ * DCCrm@CORE_CLASS_NAME@.cpp
+ *
+ *  Created on: @DATE@
+ *      Author: @AUTOR@
+ */
+
+
+#include "DCCrm@CORE_CLASS_NAME@.h"
+#include "DCCrmDBAgent.h"
+#include "DCCommService.h"
+#include "DCServiceStructDef.h" //Used for DEF_PAGE_SIZE
+
+CRM_NAMESPACE_BEGIN(svc)
+
+DYN_CLASS_IMP(DCCrm@CORE_CLASS_NAME@)
+
+static void string_replace(string& s1, const string& s2, const string& s3)
+{
+    string::size_type pos = 0;
+    string::size_type a = s2.size();
+    string::size_type b = s3.size();
+    while ((pos = s1.find(s2, pos)) != string::npos) {
+        s1.replace(pos, a, s3);
+        pos += b;
+    }
+}
+
+DCCrm@CORE_CLASS_NAME@::DCCrm@CORE_CLASS_NAME@(const char* clsName):
+DCAtomService(clsName)
+{
+	m_nSvrType=@SERVICE_TYPE@;
+	strcpy(m_szPublishName,"@SERVICE_NAME@");
+	l_@CORE_CLASS_NAME@Out.clear();
+	l_@CORE_CLASS_NAME@In.clear();
+}
+
+int DCCrm@CORE_CLASS_NAME@::GetInputParam(DCObject *pBuffer)
+{
+@GET_INPUT_PARAM@
+	return 0;
+}
+
+int DCCrm@CORE_CLASS_NAME@::BusinessProcess()
+{
+@BUSINESSPROCESS@
+	return 0;
+}
+
+int DCCrm@CORE_CLASS_NAME@::SetOutputParam(DCObject *pBuffer)
+{
+@SET_OUTPUT_PARAM@
+	return 0;
+}
+
+int DCCrm@CORE_CLASS_NAME@::InitDBAgent(DCCrmDBAgent* pDBAgent, long nClassId, bool bReply, long nLocLatnId, long nTabLatnId,string extraSQL)
+{
+    char cntKey[32] = {0};
+    if (0 != nLocLatnId) {
+    	ReplaceSql((cntKey, m_pSQLConfig->GetSqlUid(nClassId), "{[LATN_ID:%ld]}", nLocLatnId));
+    } else {
+    	ReplaceSql((cntKey, m_pSQLConfig->GetSqlUid(nClassId),  ""));
+    }
+
+    DCDBConnection *pConnection = (DCDBConnection * )((DCCommService *) GetParent())->GetServiceConnection(cntKey, this);
+    if (pConnection == NULL) {
+        CRM_LOG((LC_ERROR, "get database connection failed"));
+        this->SetErrorMsg(CRM_ERROR_SERVICE_GETCONN_FAILED, "get database connection failed");
+        return -1;
+    }
+    m_pConnection = pConnection;
+
+    char *pSql = m_pSQLConfig->GetSql(nClassId);
+    if (NULL == pSql) {
+        CRM_LOG((LC_ERROR, "get sql [%ld] failed", nClassId));
+        SetErrorMsg(CRM_ERROR_SERVICE_SQL_FAILED, "get sql[%ld] failed", nClassId);
+        return CRM_ERROR_SERVICE_SQL_FAILED;
+    }
+
+    pDBAgent->SetConnection(pConnection);
+    long nErrorCode = 0;
+    if ((nErrorCode = pDBAgent->SetSql(nClassId, bReply)) < 0) {
+        CRM_LOG((LC_ERROR, pDBAgent->GetErrorMsg()));
+        this->SetErrorMsg(CRM_ERROR_SERVICE_SQLCONF_FAILED, pDBAgent->GetErrorMsg());
+        return nErrorCode;
+    }
+
+    string sql = " "+extraSQL;
+    if (NULL != pSql) {
+        sql = pSql+sql;
+    } else {
+        CRM_LOG((LC_ERROR, "Get Sql is NULL"));
+        this->SetErrorMsg(-1, "Get Sql is NULL");
+        return -1;
+    }
+
+    string tempSql(sql);
+    string src("{[LATN_ID:%ld]}");
+    char tempId[32] = {0};
+    sprintf(tempId, "%ld", nTabLatnId);
+    string des(tempId);
+    string_replace(tempSql, src, des);
+
+    int i = 0;
+    const char *sql_use = tempSql.c_str();
+    while (' ' == sql_use[i]) ++i;
+    if (!('b' == sql_use[i] || 'B' == sql_use[i] ||
+            'i' == sql_use[i] || 'I' == sql_use[i] ||
+            'u' == sql_use[i] || 'U' == sql_use[i])) {
+        pDBAgent->SetPage(m_pPubReq->nPageIndex, m_pPubReq->nPageSize);
+    }
+
+    if ((nErrorCode = pDBAgent->PrepareSQL((char *) tempSql.c_str())) < 0) {
+        CRM_LOG((LC_ERROR, pDBAgent->GetErrorMsg()));
+        this->SetErrorMsg(CRM_ERROR_SERVICE_GETCONN_FAILED, pDBAgent->GetErrorMsg());
+        return nErrorCode;
+    }
+    return 0;
+}
+
+CRM_NAMESPACE_END()
+
+

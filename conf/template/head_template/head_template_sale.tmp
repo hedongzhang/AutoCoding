@@ -1,0 +1,48 @@
+/*
+ * DCCrm@CORE_CLASS_NAME@.h
+ *
+ *  Created on: @DATE@
+ *      Author: @AUTOR@
+ */
+
+#ifndef DCCRM@UPPER_CLASS_NAME@_H_
+#define DCCRM@UPPER_CLASS_NAME@_H_
+
+#include "DCAtomService.h"
+#include "DCServiceMacro.h"
+#include "DCCrmDBAgent.h"
+#include "DCCommService.h"
+
+CRM_NAMESPACE_BEGIN(svc)
+
+#define @SERVICE_NAME@_DEF @CLASS_ID@
+
+class DCCrm@CORE_CLASS_NAME@ : public DCAtomService
+{
+	DYN_CLASS_DECLARE(DCCrm@CORE_CLASS_NAME@)
+public:
+	DCCrm@CORE_CLASS_NAME@(const char* clsName="DCCrm@CORE_CLASS_NAME@");
+	~DCCrm@CORE_CLASS_NAME@(){}
+	int GetInputParam(DCObject* pBuffer);
+	int BusinessProcess();
+	int SetOutputParam(DCObject* pBuffer);
+	int InitDBAgent(DCCrmDBAgent* pDBAgent, long nClassId, bool bReply, long nLocLatnId, long nTabLatnId,string extraSQL);
+
+protected:
+	struct ST@CORE_CLASS_NAME@In
+	{
+@INPUT_FIELDS@
+	};
+
+	struct ST@CORE_CLASS_NAME@Out
+	{
+@OUTPUT_FIELDS@
+	};
+private:
+	list<ST@CORE_CLASS_NAME@In> l_@CORE_CLASS_NAME@In;
+	list<ST@CORE_CLASS_NAME@Out> l_@CORE_CLASS_NAME@Out;
+};
+
+CRM_NAMESPACE_END()
+
+#endif /* DCCRM@UPPER_CLASS_NAME@_H_ */
