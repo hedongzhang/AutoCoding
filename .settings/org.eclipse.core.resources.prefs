@@ -1,2 +1,13 @@
 eclipse.preferences.version=1
+encoding//inc/ACCodeManager.h=GBK
+encoding//inc/ACConfManager.h=GBK
+encoding//inc/ACManager.h=GBK
+encoding//inc/ACSQLManager.h=GBK
+encoding//inc/ACService.h=GBK
+encoding//src/ACCodeManager.cpp=GBK
+encoding//src/ACConfManager.cpp=GBK
+encoding//src/ACManager.cpp=GBK
+encoding//src/ACSQLManager.cpp=GBK
+encoding//src/ACService.cpp=GBK
 encoding/<project>=GBK
+encoding/main.cpp=GBK
